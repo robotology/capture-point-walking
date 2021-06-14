@@ -396,6 +396,7 @@ bool WalkingQPIK::setRobotState(WalkingFK& kinDynWrapper)
     m_rightFootToWorldTransform = kinDynWrapper.getRightFootToWorldTransform();
     m_neckOrientation = kinDynWrapper.getNeckOrientation();
     m_comPosition = kinDynWrapper.getCoMPosition();
+    m_comPosition(2) = kinDynWrapper.getRootLinkToWorldTransform().getPosition()(2);
 
     return true;
 }
@@ -834,8 +835,11 @@ void WalkingQPIK::evaluateBounds()
     }
     if(m_useCoMAsConstraint)
     {
-        lowerBound.segment<3>(12) = iDynTree::toEigen(m_desiredComVelocity)
-            - m_kCom * (iDynTree::toEigen(m_comPosition) -  iDynTree::toEigen(m_desiredComPosition));
+        lowerBound.segment<2>(12) = iDynTree::toEigen(m_desiredComVelocity).head<2>()
+            - m_kCom * (iDynTree::toEigen(m_comPosition).head<2>() -  iDynTree::toEigen(m_desiredComPosition).head<2>());
+
+        lowerBound.segment<1>(14) = iDynTree::toEigen(m_desiredComVelocity).tail<1>()
+            - 0.5 * (iDynTree::toEigen(m_comPosition).tail<1>() -  iDynTree::toEigen(m_desiredComPosition).tail<1>());
         upperBound.segment<3>(12) = lowerBound.segment<3>(12);
     }
 

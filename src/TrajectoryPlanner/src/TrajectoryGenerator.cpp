@@ -83,6 +83,7 @@ bool TrajectoryGenerator::configurePlanner(const yarp::os::Searchable& config)
     double timeWeight = config.check("timeWeight", yarp::os::Value(2.5)).asDouble();
     double positionWeight = config.check("positionWeight", yarp::os::Value(1.0)).asDouble();
     double slowWhenTurningGain = config.check("slowWhenTurningGain", yarp::os::Value(0.0)).asDouble();
+    double slowWhenBackwardFactor = config.check("slowWhenBackwardFactor", yarp::os::Value(1.0)).asDouble();
     double maxStepLength = config.check("maxStepLength", yarp::os::Value(0.05)).asDouble();
     double minStepLength = config.check("minStepLength", yarp::os::Value(0.005)).asDouble();
     double minWidth = config.check("minWidth", yarp::os::Value(0.03)).asDouble();
@@ -103,6 +104,8 @@ bool TrajectoryGenerator::configurePlanner(const yarp::os::Searchable& config)
                                                yarp::os::Value(0.4)).asDouble();
     double mergePointRatio = config.check("mergePointRatio", yarp::os::Value(0.5)).asDouble();
     double lastStepDCMOffset = config.check("lastStepDCMOffset", yarp::os::Value(0.0)).asDouble();
+    double leftYawDeltaInDeg = config.check("leftYawDeltaInDeg", yarp::os::Value(0.0)).asDouble();
+    double rightYawDeltaInDeg = config.check("rightYawDeltaInDeg", yarp::os::Value(0.0)).asDouble();
 
     m_nominalWidth = config.check("nominalWidth", yarp::os::Value(0.04)).asDouble();
 
@@ -129,6 +132,9 @@ bool TrajectoryGenerator::configurePlanner(const yarp::os::Searchable& config)
     ok = ok && unicyclePlanner->setMinimumAngleForNewSteps(minAngleVariation);
     ok = ok && unicyclePlanner->setMinimumStepLength(minStepLength);
     ok = ok && unicyclePlanner->setSlowWhenTurnGain(slowWhenTurningGain);
+    ok = ok && unicyclePlanner->setSlowWhenBackwardFactor(slowWhenBackwardFactor);
+    unicyclePlanner->setLeftFootYawOffsetInRadians(iDynTree::deg2rad(leftYawDeltaInDeg));
+    unicyclePlanner->setRightFootYawOffsetInRadians(iDynTree::deg2rad(rightYawDeltaInDeg));
     unicyclePlanner->addTerminalStep(true);
     unicyclePlanner->startWithLeft(m_swingLeft);
     unicyclePlanner->resetStartingFootIfStill(startWithSameFoot);
@@ -489,7 +495,10 @@ bool TrajectoryGenerator::generateFirstTrajectories(const iDynTree::Transform &l
         return false;
     }
 
-    m_generatorState = GeneratorState::Returned;
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        m_generatorState = GeneratorState::Returned;
+    }
     return true;
 }
 

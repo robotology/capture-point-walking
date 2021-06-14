@@ -512,6 +512,11 @@ bool WalkingFK::getLeftHandJacobian(iDynTree::MatrixDynSize &jacobian)
     return m_kinDyn.getFrameFreeFloatingJacobian(m_frameLeftHandIndex, jacobian);
 }
 
+bool WalkingFK::getRootLinkJacobian(iDynTree::MatrixDynSize &jacobian)
+{
+    return m_kinDyn.getFrameFreeFloatingJacobian(m_frameRootIndex, jacobian);
+}
+
 bool WalkingFK::getNeckJacobian(iDynTree::MatrixDynSize &jacobian)
 {
     return m_kinDyn.getFrameFreeFloatingJacobian(m_frameNeckIndex, jacobian);

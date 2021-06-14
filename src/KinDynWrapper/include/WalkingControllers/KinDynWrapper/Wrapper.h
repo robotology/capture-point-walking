@@ -261,6 +261,7 @@ namespace WalkingControllers
          */
         bool getCoMJacobian(iDynTree::MatrixDynSize &jacobian);
 
+        bool getRootLinkJacobian(iDynTree::MatrixDynSize &jacobian);
         /**
          * Get the joint position
          * @return the joint position expressed in radians
